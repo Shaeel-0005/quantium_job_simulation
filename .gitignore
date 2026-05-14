@@ -1,12 +1,47 @@
 # Virtual environment
 .venv/
-
-# Python cache
-__pycache__/
+__pypcache__/
 *.pyc
+*.pyo
+*.pyd
 
-# PyCharm
+# IDEs
 .idea/
+.vscode/
 
-# Environment variables
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+MANIFEST
+
+# Environments
 .env
+.venv
+
+# Logs
+*.log
+
+# Testing / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+.pytest_cache/
+nosetests.xml
+coverage.xml
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
