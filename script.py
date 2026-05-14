@@ -1,25 +1,49 @@
-from sklearn.datasets import fetch_openml
-from sklearn.model_selection import train_test_split
-import numpy as np
+import pandas as pd
+import glob
+import os
 
-# Load MNIST dataset
-mnist = fetch_openml('mnist_784', version=1, as_frame=False)
-X, y = mnist.data, mnist.target.astype(int)
+# Make sure we're pointing to correct folder
+data_path = "data/daily_sales_data_*.csv"
+files = glob.glob(data_path)
 
-# Count features and entries
-print(f"Number of entries: {X.shape[0]}")
-print(f"Number of features: {X.shape[1]}")
+print("Files found:", files)
 
-# First split: separate training (60%) and temporary (40%)
-X_train, X_temp, y_train, y_temp = train_test_split(
-    X, y, test_size=0.4, random_state=42, stratify=y
-)
+all_data = []
 
-# Second split: temporary into test (30% of total) and validation (10% of total)
-X_test, X_val, y_test, y_val = train_test_split(
-    X_temp, y_temp, test_size=0.25, random_state=42, stratify=y_temp
-)
+for file in files:
+    df = pd.read_csv(file)
 
-print(f"Training set: {X_train.shape[0]} samples")
-print(f"Testing set: {X_test.shape[0]} samples")
-print(f"Validation set: {X_val.shape[0]} samples")
+    # Normalize column names (just in case)
+    df.columns = df.columns.str.lower()
+
+    # Filter Pink Morsels (case-safe)
+    df = df[df["product"].str.strip().str.lower() == "pink morsel"]
+
+    if df.empty:
+        print(f"No Pink Morsels in {file}")
+        continue
+
+    # Clean price
+    df["price"] = df["price"].astype(str).str.replace("$", "", regex=False).astype(float)
+
+    # Quantity numeric
+    df["quantity"] = pd.to_numeric(df["quantity"], errors="coerce")
+
+    # Sales calculation
+    df["sales"] = df["quantity"] * df["price"]
+
+    # Keep required columns
+    df = df[["sales", "date", "region"]]
+
+    # Standardize names
+    df.columns = ["Sales", "Date", "Region"]
+
+    all_data.append(df)
+
+# Combine safely
+if all_data:
+    final_df = pd.concat(all_data, ignore_index=True)
+    final_df.to_csv("formatted_sales_output.csv", index=False)
+    print("Done! File created.")
+else:
+    print("No data found after filtering.")
